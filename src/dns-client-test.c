@@ -12,6 +12,7 @@ int32_t is_save;
 volatile int32_t sended;
 volatile int32_t readed;
 
+double one_cycle_ns;
 volatile double coeff = 1;
 
 struct sockaddr_in listen_addr, dns_addr;
@@ -35,7 +36,8 @@ void errmsg(const char *format, ...)
 
 void *send_dns(__attribute__((unused)) void *arg)
 {
-    char packet[PACKET_MAX_SIZE], line_buf[PACKET_MAX_SIZE];
+    char packet[PACKET_MAX_SIZE];
+    char line_buf[PACKET_MAX_SIZE];
     int32_t line_count = 0;
 
     while (fscanf(in_domains_fp, "%s", line_buf) != EOF) {
@@ -77,9 +79,9 @@ void *send_dns(__attribute__((unused)) void *arg)
 
         sended = line_count;
 
-        int32_t time_test = 1;
-        for (int32_t i = 0; i < 1000000 / rps / coeff * 50; i++) {
-            time_test *= 3;
+        volatile double time_test = 1.0;
+        for (int32_t i = 0; i < 1000000000.0 / rps / one_cycle_ns / coeff; i++) {
+            time_test *= 3.0;
         }
     }
 
@@ -394,6 +396,22 @@ int32_t main(int32_t argc, char *argv[])
 
     dns_addr.sin_addr.s_addr = INADDR_NONE;
 
+    {
+        struct timeval now_timeval_start;
+        gettimeofday(&now_timeval_start, NULL);
+        volatile double time_test = 1.0;
+        for (int32_t j = 0; j < 1000; j++) {
+            for (int32_t i = 0; i < 1000; i++) {
+                time_test *= 3.0;
+            }
+        }
+        struct timeval now_timeval_end;
+        gettimeofday(&now_timeval_end, NULL);
+        uint64_t now_us_start = now_timeval_start.tv_sec * 1000000 + now_timeval_start.tv_usec;
+        uint64_t now_us_end = now_timeval_end.tv_sec * 1000000 + now_timeval_end.tv_usec;
+        one_cycle_ns = ((now_us_end - now_us_start) * 1000.0) / 1000.0 / 1000.0;
+    }
+
     for (int32_t i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-f")) {
             if (i != argc - 1) {
@@ -553,6 +571,11 @@ int32_t main(int32_t argc, char *argv[])
 
     int32_t exit_wait = 0;
 
+    struct timeval now_timeval_start;
+    struct timeval now_timeval_end;
+
+    memset(&now_timeval_start, 0, sizeof(now_timeval_start));
+
     printf("Send_RPS Read_RPS Sended Readed Diff\n");
     while (true) {
         sleep(1);
@@ -574,7 +597,16 @@ int32_t main(int32_t argc, char *argv[])
             return EXIT_SUCCESS;
         }
 
-        coeff *= (1.0 * rps) / (sended - sended_old);
+        gettimeofday(&now_timeval_end, NULL);
+
+        if (now_timeval_start.tv_sec != 0) {
+            uint64_t now_us_start = now_timeval_start.tv_sec * 1000000 + now_timeval_start.tv_usec;
+            uint64_t now_us_end = now_timeval_end.tv_sec * 1000000 + now_timeval_end.tv_usec;
+            double real_rps = (sended - sended_old) / ((now_us_end - now_us_start) / 1000000.0);
+            coeff *= rps / real_rps;
+        }
+
+        gettimeofday(&now_timeval_start, NULL);
 
         sended_old = sended;
         readed_old = readed;
