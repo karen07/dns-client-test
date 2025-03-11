@@ -374,7 +374,7 @@ void print_help(void)
 {
     printf("Commands:\n"
            "  Required parameters:\n"
-           "    -f  \"/example.txt\"  Domains file path\n"
+           "    -f  \"/test.txt\"  Domains file path\n"
            "    -d  \"x.x.x.x:xx\"    DNS address\n"
            "    -r  \"xxx\"           Request per second\n"
            "  Optional parameters:\n"

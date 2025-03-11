@@ -4,7 +4,7 @@ DNS-client-test program resolves domains from a file with a set number of reques
 ```sh
 Commands:
   Required parameters:
-    -f  "/example.txt"  Domains file path
+    -f  "/test.txt"  Domains file path
     -d  "x.x.x.x:xx"    DNS address
     -r  "xxx"           Request per second
   Optional parameters:
