@@ -374,11 +374,11 @@ void print_help(void)
 {
     printf("Commands:\n"
            "  Required parameters:\n"
-           "    -f  \"/test.txt\"  Domains file path\n"
-           "    -d  \"x.x.x.x:xx\"    DNS address\n"
-           "    -r  \"xxx\"           Request per second\n"
+           "    -f  \"/test.txt\"   Domains file path\n"
+           "    -d  \"x.x.x.x:xx\"  DNS address\n"
+           "    -r  \"xxx\"         Request per second\n"
            "  Optional parameters:\n"
-           "    -b  \"/test.txt\"     Subnets not add to the routing table\n"
+           "    -b  \"/test.txt\"   Subnets not add to the routing table\n"
            "    --save              Save DNS answer data to cache.data,\n"
            "                        DNS answer domains to out_domains.txt,\n"
            "                        DNS answer IPs to ips.txt\n");
