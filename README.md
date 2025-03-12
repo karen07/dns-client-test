@@ -8,6 +8,7 @@ Commands:
     -d  "x.x.x.x:xx"    DNS address
     -r  "xxx"           Request per second
   Optional parameters:
+    -b  "/test.txt"     Subnets not add to the routing table
     --save              Save DNS answer data to cache.data,
                         DNS answer domains to out_domains.txt,
                         DNS answer IPs to ips.txt
