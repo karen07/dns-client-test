@@ -379,9 +379,9 @@ void print_help(void)
            "    -r  \"xxx\"         Request per second\n"
            "  Optional parameters:\n"
            "    -b  \"/test.txt\"   Subnets not add to the routing table\n"
-           "    --save              Save DNS answer data to cache.data,\n"
-           "                        DNS answer domains to out_domains.txt,\n"
-           "                        DNS answer IPs to ips.txt\n");
+           "    --save            Save DNS answer data to cache.data,\n"
+           "                      DNS answer domains to out_domains.txt,\n"
+           "                      DNS answer IPs to ips.txt\n");
 }
 
 #define LISTEN_PORT_START 2000
