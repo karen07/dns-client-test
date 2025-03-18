@@ -584,8 +584,8 @@ int32_t main(int32_t argc, char *argv[])
         struct tm *tm_struct = localtime(&now);
         printf("\n%02d.%02d.%04d %02d:%02d:%02d\n", tm_struct->tm_mday, tm_struct->tm_mon + 1,
                tm_struct->tm_year + 1900, tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
-        printf("%8d %8d %6d %6d %4d\n", sended - sended_old, readed - readed_old, sended,
-               readed, sended - readed);
+        printf("%8d %8d %6d %6d %4d\n", sended - sended_old, readed - readed_old, sended, readed,
+               sended - readed);
 
         if (readed == readed_old) {
             exit_wait++;
