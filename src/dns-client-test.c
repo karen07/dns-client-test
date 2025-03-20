@@ -88,32 +88,6 @@ void *send_dns(__attribute__((unused)) void *arg)
     return NULL;
 }
 
-#define DNS_TypeA 1
-#define DNS_TypeCNAME 5
-
-#define GET_DOMAIN_OK 0
-#define GET_DOMAIN_FIRST_BYTE_ERROR 1
-#define GET_DOMAIN_SECOND_BYTE_ERROR 3
-#define GET_DOMAIN_LAST_CH_DOMAIN_ERROR 2
-#define GET_DOMAIN_MAX_JUMP_COUNT 100
-#define GET_DOMAIN_JUMP_COUNT_ERROR 4
-#define GET_DOMAIN_TWO_BITS_ERROR 5
-#define GET_DOMAIN_CH_BYTE_ERROR 6
-#define GET_DOMAIN_ADD_CH_DOMAIN_ERROR 7
-#define GET_DOMAIN_NULL_CH_DOMAIN_ERROR 8
-
-#define DNS_ANS_CHECK_HEADER_SIZE_ERROR -2
-#define DNS_ANS_CHECK_RES_TYPE_ERROR -3
-#define DNS_ANS_CHECK_QUE_COUNT_ERROR -4
-#define DNS_ANS_CHECK_ANS_COUNT_ERROR -5
-#define DNS_ANS_CHECK_QUE_URL_GET_ERROR -6
-#define DNS_ANS_CHECK_QUE_DATA_GET_ERROR -7
-#define DNS_ANS_CHECK_ANS_URL_GET_ERROR -8
-#define DNS_ANS_CHECK_ANS_DATA_GET_ERROR -9
-#define DNS_ANS_CHECK_ANS_LEN_ERROR -10
-#define DNS_ANS_CHECK_CNAME_URL_GET_ERROR -11
-#define DNS_ANS_CHECK_NOT_END_ERROR -12
-
 int32_t get_domain_from_packet(memory_t *receive_msg, char *cur_pos_ptr, char **new_cur_pos_ptr,
                                memory_t *domain)
 {
