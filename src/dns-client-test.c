@@ -388,14 +388,9 @@ void print_help(void)
 
 int32_t main(int32_t argc, char *argv[])
 {
-    printf("DNS client test started\n");
-    printf("Launch parameters:\n");
+    printf("DNS client test started\n\n");
 
-    char blacklist_file_path[PATH_MAX];
-    memset(blacklist_file_path, 0, PATH_MAX);
-
-    dns_addr.sin_addr.s_addr = INADDR_NONE;
-
+    //Timer based on for
     {
         struct timeval now_timeval_start;
         gettimeofday(&now_timeval_start, NULL);
@@ -411,7 +406,14 @@ int32_t main(int32_t argc, char *argv[])
         uint64_t now_us_end = now_timeval_end.tv_sec * 1000000 + now_timeval_end.tv_usec;
         one_cycle_ns = ((now_us_end - now_us_start) * 1000.0) / 1000.0 / 1000.0;
     }
+    //Timer based on for
 
+    char blacklist_file_path[PATH_MAX];
+    memset(blacklist_file_path, 0, PATH_MAX);
+
+    dns_addr.sin_addr.s_addr = INADDR_NONE;
+
+    printf("Launch parameters:\n");
     for (int32_t i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-f")) {
             if (i != argc - 1) {
@@ -576,16 +578,40 @@ int32_t main(int32_t argc, char *argv[])
 
     memset(&now_timeval_start, 0, sizeof(now_timeval_start));
 
-    printf("Send_RPS Read_RPS Sended Readed Diff\n");
+    time_t now = time(NULL);
+    struct tm *tm_struct = localtime(&now);
+    printf("\nStart time %02d.%02d.%04d %02d:%02d:%02d\n\n", tm_struct->tm_mday,
+           tm_struct->tm_mon + 1, tm_struct->tm_year + 1900, tm_struct->tm_hour, tm_struct->tm_min,
+           tm_struct->tm_sec);
+
+    char print_format[100];
+    char *print_data[100];
+    print_data[0] = "Send_RPS;";
+    print_data[1] = "Read_RPS;";
+    print_data[2] = "Sended;";
+    print_data[3] = "Readed;";
+    print_data[4] = "Diff;";
+
+    for (int32_t i = 0; i < 5; i++) {
+        printf("%s", print_data[i]);
+    }
+    printf("\n");
+
     while (true) {
         sleep(1);
 
-        time_t now = time(NULL);
-        struct tm *tm_struct = localtime(&now);
-        printf("\n%02d.%02d.%04d %02d:%02d:%02d\n", tm_struct->tm_mday, tm_struct->tm_mon + 1,
-               tm_struct->tm_year + 1900, tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
-        printf("%8d %8d %6d %6d %4d\n", sended - sended_old, readed - readed_old, sended, readed,
-               sended - readed);
+        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[0]) - 1));
+        printf(print_format, sended - sended_old);
+        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[1]) - 1));
+        printf(print_format, readed - readed_old);
+        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[2]) - 1));
+        printf(print_format, sended);
+        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[3]) - 1));
+        printf(print_format, readed);
+        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[4]) - 1));
+        printf(print_format, sended - readed);
+        printf("\n");
+        fflush(stdout);
 
         if (readed == readed_old) {
             exit_wait++;
@@ -594,7 +620,7 @@ int32_t main(int32_t argc, char *argv[])
         }
 
         if (exit_wait >= EXIT_WAIT_SEC) {
-            return EXIT_SUCCESS;
+            break;
         }
 
         gettimeofday(&now_timeval_end, NULL);
@@ -611,6 +637,12 @@ int32_t main(int32_t argc, char *argv[])
         sended_old = sended;
         readed_old = readed;
     }
+
+    now = time(NULL);
+    tm_struct = localtime(&now);
+    printf("\nEnd time %02d.%02d.%04d %02d:%02d:%02d\n", tm_struct->tm_mday, tm_struct->tm_mon + 1,
+           tm_struct->tm_year + 1900, tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
+    fflush(stdout);
 
     return EXIT_SUCCESS;
 }
