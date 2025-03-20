@@ -23,10 +23,9 @@
 #define FIRST_BIT_UINT16 0x8000
 #define FIRST_TWO_BITS_UINT8 0xC0
 
-#define DNS_TypeA 1
-#define DNS_TypeCNAME 5
-
 #define BLACKLIST_MAX_COUNT 128
+
+#define LISTEN_PORT_START 2000
 
 typedef struct dns_header {
     uint16_t id;

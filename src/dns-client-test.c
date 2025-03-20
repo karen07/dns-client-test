@@ -395,8 +395,6 @@ static void main_catch_function(int32_t signo)
     }
 }
 
-#define LISTEN_PORT_START 2000
-
 int32_t main(int32_t argc, char *argv[])
 {
     printf("DNS client test started\n\n");
@@ -436,236 +434,262 @@ int32_t main(int32_t argc, char *argv[])
 
     dns_addr.sin_addr.s_addr = INADDR_NONE;
 
-    printf("Launch parameters:\n");
-    for (int32_t i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-f")) {
-            if (i != argc - 1) {
-                printf("  File  \"%s\"\n", argv[i + 1]);
-                if (strlen(argv[i + 1]) < PATH_MAX - 100) {
-                    strcpy(domains_file_path, argv[i + 1]);
-                }
-                i++;
-            }
-            continue;
-        }
-        if (!strcmp(argv[i], "-d")) {
-            if (i != argc - 1) {
-                printf("  DNS   \"%s\"\n", argv[i + 1]);
-                char *colon_ptr = strchr(argv[i + 1], ':');
-                if (colon_ptr) {
-                    uint16_t tmp_port = 0;
-                    sscanf(colon_ptr + 1, "%hu", &tmp_port);
-                    *colon_ptr = 0;
-                    if (strlen(argv[i + 1]) < INET_ADDRSTRLEN) {
-                        dns_addr.sin_family = AF_INET;
-                        dns_addr.sin_port = htons(tmp_port);
-                        dns_addr.sin_addr.s_addr = inet_addr(argv[i + 1]);
+    //Args
+    {
+        printf("Launch parameters:\n");
+        for (int32_t i = 1; i < argc; i++) {
+            if (!strcmp(argv[i], "-f")) {
+                if (i != argc - 1) {
+                    printf("  File  \"%s\"\n", argv[i + 1]);
+                    if (strlen(argv[i + 1]) < PATH_MAX - 100) {
+                        strcpy(domains_file_path, argv[i + 1]);
                     }
-                    *colon_ptr = ':';
+                    i++;
                 }
-                i++;
+                continue;
             }
-            continue;
-        }
-        if (!strcmp(argv[i], "-r")) {
-            if (i != argc - 1) {
-                printf("  RPS   \"%s\"\n", argv[i + 1]);
-                sscanf(argv[i + 1], "%u", &rps);
-                i++;
-            }
-            continue;
-        }
-        if (!strcmp(argv[i], "-b")) {
-            if (i != argc - 1) {
-                if (strlen(argv[i + 1]) < PATH_MAX) {
-                    strcpy(blacklist_file_path, argv[i + 1]);
-                    printf("  Blacklist  \"%s\"\n", blacklist_file_path);
+            if (!strcmp(argv[i], "-d")) {
+                if (i != argc - 1) {
+                    printf("  DNS   \"%s\"\n", argv[i + 1]);
+                    char *colon_ptr = strchr(argv[i + 1], ':');
+                    if (colon_ptr) {
+                        uint16_t tmp_port = 0;
+                        sscanf(colon_ptr + 1, "%hu", &tmp_port);
+                        *colon_ptr = 0;
+                        if (strlen(argv[i + 1]) < INET_ADDRSTRLEN) {
+                            dns_addr.sin_family = AF_INET;
+                            dns_addr.sin_port = htons(tmp_port);
+                            dns_addr.sin_addr.s_addr = inet_addr(argv[i + 1]);
+                        }
+                        *colon_ptr = ':';
+                    }
+                    i++;
                 }
-                i++;
+                continue;
             }
-            continue;
-        }
-        if (!strcmp(argv[i], "--save")) {
-            printf("  Save  enabled\n");
-            is_save = 1;
-            continue;
-        }
-        print_help();
-        errmsg("Unknown command %s\n", argv[i]);
-    }
-
-    if (domains_file_path[0] == 0) {
-        print_help();
-        errmsg("Programm need domains file path\n");
-    }
-
-    if (dns_addr.sin_addr.s_addr == INADDR_NONE) {
-        print_help();
-        errmsg("Programm need DNS IP\n");
-    }
-
-    if (dns_addr.sin_port == 0) {
-        print_help();
-        errmsg("Programm need DNS port\n");
-    }
-
-    if (rps == 0) {
-        print_help();
-        errmsg("Programm need RPS\n");
-    }
-
-    in_domains_fp = fopen(domains_file_path, "r");
-    if (!in_domains_fp) {
-        errmsg("Can't open file %s\n", domains_file_path);
-    }
-
-    add_blacklist("0.0.0.0/8");
-    add_blacklist("10.0.0.0/8");
-    add_blacklist("100.64.0.0/10");
-    add_blacklist("127.0.0.0/8");
-    add_blacklist("172.16.0.0/12");
-    add_blacklist("192.168.0.0/16");
-
-    if (blacklist_file_path[0] != 0) {
-        FILE *blacklist_fd;
-        blacklist_fd = fopen(blacklist_file_path, "r");
-        if (blacklist_fd == NULL) {
-            errmsg("Can't open blacklist file %s\n", blacklist_file_path);
+            if (!strcmp(argv[i], "-r")) {
+                if (i != argc - 1) {
+                    printf("  RPS   \"%s\"\n", argv[i + 1]);
+                    sscanf(argv[i + 1], "%u", &rps);
+                    i++;
+                }
+                continue;
+            }
+            if (!strcmp(argv[i], "-b")) {
+                if (i != argc - 1) {
+                    if (strlen(argv[i + 1]) < PATH_MAX) {
+                        strcpy(blacklist_file_path, argv[i + 1]);
+                        printf("  Blacklist  \"%s\"\n", blacklist_file_path);
+                    }
+                    i++;
+                }
+                continue;
+            }
+            if (!strcmp(argv[i], "--save")) {
+                printf("  Save  enabled\n");
+                is_save = 1;
+                continue;
+            }
+            print_help();
+            errmsg("Unknown command %s\n", argv[i]);
         }
 
-        char tmp_line[100];
-
-        while (fscanf(blacklist_fd, "%s", tmp_line) != EOF) {
-            add_blacklist(tmp_line);
+        if (domains_file_path[0] == 0) {
+            print_help();
+            errmsg("Programm need domains file path\n");
         }
 
-        if (blacklist_count > BLACKLIST_MAX_COUNT) {
-            errmsg("The program needs a maximum of %d blacklist subnets, seted %d\n",
-                   BLACKLIST_MAX_COUNT, blacklist_count);
+        if (dns_addr.sin_addr.s_addr == INADDR_NONE) {
+            print_help();
+            errmsg("Programm need DNS IP\n");
+        }
+
+        if (dns_addr.sin_port == 0) {
+            print_help();
+            errmsg("Programm need DNS port\n");
+        }
+
+        if (rps == 0) {
+            print_help();
+            errmsg("Programm need RPS\n");
         }
     }
+    //Args
 
-    if (is_save) {
-        cache_fp = fopen("cache.data", "w");
-        if (!cache_fp) {
-            errmsg("Can't open file cache.data\n");
+    //Open files
+    {
+        in_domains_fp = fopen(domains_file_path, "r");
+        if (!in_domains_fp) {
+            errmsg("Can't open file %s\n", domains_file_path);
         }
-        out_domains_fp = fopen("out_domains.txt", "w");
-        if (!out_domains_fp) {
-            errmsg("Can't open file out_domains.txt\n");
+
+        if (is_save) {
+            cache_fp = fopen("cache.data", "w");
+            if (!cache_fp) {
+                errmsg("Can't open file cache.data\n");
+            }
+            out_domains_fp = fopen("out_domains.txt", "w");
+            if (!out_domains_fp) {
+                errmsg("Can't open file out_domains.txt\n");
+            }
+            ips_fp = fopen("ips.txt", "w");
+            if (!ips_fp) {
+                errmsg("Can't open file ips.txt\n");
+            }
         }
-        ips_fp = fopen("ips.txt", "w");
-        if (!ips_fp) {
-            errmsg("Can't open file ips.txt\n");
+    }
+    //Open files
+
+    //Blacklist read
+    {
+        add_blacklist("0.0.0.0/8");
+        add_blacklist("10.0.0.0/8");
+        add_blacklist("100.64.0.0/10");
+        add_blacklist("127.0.0.0/8");
+        add_blacklist("172.16.0.0/12");
+        add_blacklist("192.168.0.0/16");
+
+        if (blacklist_file_path[0] != 0) {
+            FILE *blacklist_fd;
+            blacklist_fd = fopen(blacklist_file_path, "r");
+            if (blacklist_fd == NULL) {
+                errmsg("Can't open blacklist file %s\n", blacklist_file_path);
+            }
+
+            char tmp_line[100];
+
+            while (fscanf(blacklist_fd, "%s", tmp_line) != EOF) {
+                add_blacklist(tmp_line);
+            }
+
+            if (blacklist_count > BLACKLIST_MAX_COUNT) {
+                errmsg("The program needs a maximum of %d blacklist subnets, seted %d\n",
+                       BLACKLIST_MAX_COUNT, blacklist_count);
+            }
         }
     }
+    //Blacklist read
 
-    listen_addr.sin_family = AF_INET;
-    listen_addr.sin_port = htons(LISTEN_PORT_START);
-    listen_addr.sin_addr.s_addr = 0;
+    //Open socket
+    {
+        listen_addr.sin_family = AF_INET;
+        listen_addr.sin_port = htons(LISTEN_PORT_START);
+        listen_addr.sin_addr.s_addr = 0;
 
-    listen_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (listen_socket < 0) {
-        errmsg("Can't create socket %s\n", strerror(errno));
+        listen_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if (listen_socket < 0) {
+            errmsg("Can't create socket %s\n", strerror(errno));
+        }
+
+        while (bind(listen_socket, (struct sockaddr *)&listen_addr, sizeof(listen_addr)) < 0) {
+            listen_addr.sin_port = htons(ntohs(listen_addr.sin_port) + 1);
+        }
     }
+    //Open socket
 
-    while (bind(listen_socket, (struct sockaddr *)&listen_addr, sizeof(listen_addr)) < 0) {
-        listen_addr.sin_port = htons(ntohs(listen_addr.sin_port) + 1);
+    //Threads
+    {
+        pthread_t send_thread;
+        if (pthread_create(&send_thread, NULL, send_dns, NULL)) {
+            errmsg("Can't create send_thread\n");
+        }
+
+        if (pthread_detach(send_thread)) {
+            errmsg("Can't detach send_thread\n");
+        }
+
+        pthread_t read_thread;
+        if (pthread_create(&read_thread, NULL, read_dns, NULL)) {
+            errmsg("Can't create read_thread\n");
+        }
+
+        if (pthread_detach(read_thread)) {
+            errmsg("Can't detach read_thread\n");
+        }
     }
+    //Threads
 
-    pthread_t send_thread;
-    if (pthread_create(&send_thread, NULL, send_dns, NULL)) {
-        errmsg("Can't create send_thread\n");
-    }
+    //Stat
+    {
+        int32_t sended_old = 0;
+        int32_t readed_old = 0;
 
-    if (pthread_detach(send_thread)) {
-        errmsg("Can't detach send_thread\n");
-    }
+        int32_t exit_wait = 0;
 
-    pthread_t read_thread;
-    if (pthread_create(&read_thread, NULL, read_dns, NULL)) {
-        errmsg("Can't create read_thread\n");
-    }
+        struct timeval now_timeval_start;
+        struct timeval now_timeval_end;
 
-    if (pthread_detach(read_thread)) {
-        errmsg("Can't detach read_thread\n");
-    }
+        memset(&now_timeval_start, 0, sizeof(now_timeval_start));
 
-    int32_t sended_old = 0;
-    int32_t readed_old = 0;
+        time_t now = time(NULL);
+        struct tm *tm_struct = localtime(&now);
+        printf("\nStart time %02d.%02d.%04d %02d:%02d:%02d\n\n", tm_struct->tm_mday,
+               tm_struct->tm_mon + 1, tm_struct->tm_year + 1900, tm_struct->tm_hour,
+               tm_struct->tm_min, tm_struct->tm_sec);
 
-    int32_t exit_wait = 0;
+        char print_format[100];
+        char *print_data[100];
+        print_data[0] = "Send_RPS;";
+        print_data[1] = " Read_RPS;";
+        print_data[2] = "   Sended;";
+        print_data[3] = "   Readed;";
+        print_data[4] = "     Diff;";
 
-    struct timeval now_timeval_start;
-    struct timeval now_timeval_end;
-
-    memset(&now_timeval_start, 0, sizeof(now_timeval_start));
-
-    time_t now = time(NULL);
-    struct tm *tm_struct = localtime(&now);
-    printf("\nStart time %02d.%02d.%04d %02d:%02d:%02d\n\n", tm_struct->tm_mday,
-           tm_struct->tm_mon + 1, tm_struct->tm_year + 1900, tm_struct->tm_hour, tm_struct->tm_min,
-           tm_struct->tm_sec);
-
-    char print_format[100];
-    char *print_data[100];
-    print_data[0] = "Send_RPS;";
-    print_data[1] = " Read_RPS;";
-    print_data[2] = "   Sended;";
-    print_data[3] = "   Readed;";
-    print_data[4] = "     Diff;";
-
-    for (int32_t i = 0; i < 5; i++) {
-        printf("%s", print_data[i]);
-    }
-    printf("\n");
-
-    while (true) {
-        sleep(1);
-
-        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[0]) - 1));
-        printf(print_format, sended - sended_old);
-        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[1]) - 1));
-        printf(print_format, readed - readed_old);
-        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[2]) - 1));
-        printf(print_format, sended);
-        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[3]) - 1));
-        printf(print_format, readed);
-        sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[4]) - 1));
-        printf(print_format, sended - readed);
+        for (int32_t i = 0; i < 5; i++) {
+            printf("%s", print_data[i]);
+        }
         printf("\n");
+
+        while (true) {
+            sleep(1);
+
+            sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[0]) - 1));
+            printf(print_format, sended - sended_old);
+            sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[1]) - 1));
+            printf(print_format, readed - readed_old);
+            sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[2]) - 1));
+            printf(print_format, sended);
+            sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[3]) - 1));
+            printf(print_format, readed);
+            sprintf(print_format, "%%%dd;", (int32_t)(strlen(print_data[4]) - 1));
+            printf(print_format, sended - readed);
+            printf("\n");
+            fflush(stdout);
+
+            if (readed == readed_old) {
+                exit_wait++;
+            } else {
+                exit_wait = 0;
+            }
+
+            if (exit_wait >= EXIT_WAIT_SEC) {
+                break;
+            }
+
+            gettimeofday(&now_timeval_end, NULL);
+
+            if (now_timeval_start.tv_sec != 0) {
+                uint64_t now_us_start =
+                    now_timeval_start.tv_sec * 1000000 + now_timeval_start.tv_usec;
+                uint64_t now_us_end = now_timeval_end.tv_sec * 1000000 + now_timeval_end.tv_usec;
+                double real_rps = (sended - sended_old) / ((now_us_end - now_us_start) / 1000000.0);
+                coeff *= rps / real_rps;
+            }
+
+            gettimeofday(&now_timeval_start, NULL);
+
+            sended_old = sended;
+            readed_old = readed;
+        }
+
+        now = time(NULL);
+        tm_struct = localtime(&now);
+        printf("\nEnd time %02d.%02d.%04d %02d:%02d:%02d\n", tm_struct->tm_mday,
+               tm_struct->tm_mon + 1, tm_struct->tm_year + 1900, tm_struct->tm_hour,
+               tm_struct->tm_min, tm_struct->tm_sec);
         fflush(stdout);
-
-        if (readed == readed_old) {
-            exit_wait++;
-        } else {
-            exit_wait = 0;
-        }
-
-        if (exit_wait >= EXIT_WAIT_SEC) {
-            break;
-        }
-
-        gettimeofday(&now_timeval_end, NULL);
-
-        if (now_timeval_start.tv_sec != 0) {
-            uint64_t now_us_start = now_timeval_start.tv_sec * 1000000 + now_timeval_start.tv_usec;
-            uint64_t now_us_end = now_timeval_end.tv_sec * 1000000 + now_timeval_end.tv_usec;
-            double real_rps = (sended - sended_old) / ((now_us_end - now_us_start) / 1000000.0);
-            coeff *= rps / real_rps;
-        }
-
-        gettimeofday(&now_timeval_start, NULL);
-
-        sended_old = sended;
-        readed_old = readed;
     }
-
-    now = time(NULL);
-    tm_struct = localtime(&now);
-    printf("\nEnd time %02d.%02d.%04d %02d:%02d:%02d\n", tm_struct->tm_mday, tm_struct->tm_mon + 1,
-           tm_struct->tm_year + 1900, tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
-    fflush(stdout);
+    //Stat
 
     return EXIT_SUCCESS;
 }
