@@ -384,11 +384,34 @@ void print_help(void)
            "                      DNS answer IPs to ips.txt\n");
 }
 
+static void main_catch_function(int32_t signo)
+{
+    if (signo == SIGINT) {
+        errmsg("SIGINT catched main\n");
+    } else if (signo == SIGSEGV) {
+        errmsg("SIGSEGV catched main\n");
+    } else if (signo == SIGTERM) {
+        errmsg("SIGTERM catched main\n");
+    }
+}
+
 #define LISTEN_PORT_START 2000
 
 int32_t main(int32_t argc, char *argv[])
 {
     printf("DNS client test started\n\n");
+
+    if (signal(SIGINT, main_catch_function) == SIG_ERR) {
+        errmsg("Can't set SIGINT signal handler main\n");
+    }
+
+    if (signal(SIGSEGV, main_catch_function) == SIG_ERR) {
+        errmsg("Can't set SIGSEGV signal handler main\n");
+    }
+
+    if (signal(SIGTERM, main_catch_function) == SIG_ERR) {
+        errmsg("Can't set SIGTERM signal handler main\n");
+    }
 
     //Timer based on for
     {
