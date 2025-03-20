@@ -587,10 +587,10 @@ int32_t main(int32_t argc, char *argv[])
     char print_format[100];
     char *print_data[100];
     print_data[0] = "Send_RPS;";
-    print_data[1] = "Read_RPS;";
-    print_data[2] = "Sended;";
-    print_data[3] = "Readed;";
-    print_data[4] = "Diff;";
+    print_data[1] = " Read_RPS;";
+    print_data[2] = "   Sended;";
+    print_data[3] = "   Readed;";
+    print_data[4] = "     Diff;";
 
     for (int32_t i = 0; i < 5; i++) {
         printf("%s", print_data[i]);
