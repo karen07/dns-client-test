@@ -40,7 +40,15 @@ void *send_dns(__attribute__((unused)) void *arg)
     char line_buf[PACKET_MAX_SIZE];
     int32_t line_count = 0;
 
-    while (fscanf(in_domains_fp, "%s", line_buf) != EOF) {
+    while (true) {
+        if (in_domains_fp) {
+            if (fscanf(in_domains_fp, "%s", line_buf) == EOF) {
+                break;
+            }
+        } else {
+            strcpy(line_buf, "test.com");
+        }
+
         line_count++;
 
         dns_header_t *header = (dns_header_t *)packet;
@@ -348,11 +356,11 @@ void print_help(void)
 {
     printf("Commands:\n"
            "  Required parameters:\n"
-           "    -f  \"/test.txt\"   Domains file path\n"
            "    -d  \"x.x.x.x:xx\"  DNS address\n"
            "    -r  \"xxx\"         Request per second\n"
            "  Optional parameters:\n"
-           "    -b  \"/test.txt\"   Subnets not add to the routing table\n"
+           "    -f  \"/test.txt\"   Domains file path\n"
+           "    -b  \"/test.txt\"   Subnets not add to the save files\n"
            "    --save            Save DNS answer data to cache.data,\n"
            "                      DNS answer domains to out_domains.txt,\n"
            "                      DNS answer IPs to ips.txt\n");
@@ -468,9 +476,14 @@ int32_t main(int32_t argc, char *argv[])
             errmsg("Unknown command %s\n", argv[i]);
         }
 
-        if (domains_file_path[0] == 0) {
+        /*if (domains_file_path[0] == 0) {
             print_help();
             errmsg("Programm need domains file path\n");
+        }*/
+
+        if (domains_file_path[0] == 0 && is_save == 1) {
+            print_help();
+            errmsg("For --save you need set -f(Domains file path)\n");
         }
 
         if (dns_addr.sin_addr.s_addr == INADDR_NONE) {
@@ -492,9 +505,11 @@ int32_t main(int32_t argc, char *argv[])
 
     //Open files
     {
-        in_domains_fp = fopen(domains_file_path, "r");
-        if (!in_domains_fp) {
-            errmsg("Can't open file %s\n", domains_file_path);
+        if (domains_file_path[0] != 0) {
+            in_domains_fp = fopen(domains_file_path, "r");
+            if (!in_domains_fp) {
+                errmsg("Can't open file %s\n", domains_file_path);
+            }
         }
 
         if (is_save) {
