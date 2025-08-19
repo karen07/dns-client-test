@@ -1,4 +1,4 @@
-#include "dns-client-test.h"
+#include "dns_client_test.h"
 
 FILE *in_domains_fp;
 FILE *cache_fp;
