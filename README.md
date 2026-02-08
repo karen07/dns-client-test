@@ -1,5 +1,5 @@
 # DNS client test
-DNS-client-test program resolves domains from a file with a set number of requests per second. And it can save the results to files. The cache.data can be used in the dns-server-test program.
+The DNS-client-test program resolves domains listed in a file at a configurable request rate and can save the results to output files. The generated `cache.data` file can be used by the DNS-server-test program.
 ## Usage
 ```sh
 Commands:
