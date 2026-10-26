@@ -1,14 +1,13 @@
 # DNS client test
 
-DNS client test is a small UDP DNS load generator for reproducible DNS experiments.
-
-It reads domains from a text file, sends either `A` or `HTTPS` queries to a selected resolver at a configurable rate, and can save raw DNS responses for replay with `dns-server-test`. An optional random sample mode makes it possible to run the same experiment on a smaller subset of a large domain list.
-
-The program can also write a human-readable DNS log showing the Question type and the records returned in the Answer, Authority, and Additional sections.
+A UDP DNS load generator for reproducible experiments. It sends `A` or `HTTPS` queries at
+a configurable rate and can save raw responses for replay by `dns-server-test`.
 
 ## Описание
 
-DNS client test - небольшой генератор UDP DNS нагрузки для воспроизводимых DNS-экспериментов.
+Генератор нагрузки UDP DNS для воспроизводимых экспериментов. Отправляет запросы типов A или
+HTTPS с настраиваемой частотой и умеет сохранять необработанные ответы для последующего
+воспроизведения в `dns-server-test`.
 
 Программа читает домены из текстового файла и отправляет запросы на явно указанный DNS resolver с заданной частотой. Поддерживаются два режима, которые нужны для текущих тестов:
 
@@ -20,6 +19,15 @@ DNS client test - небольшой генератор UDP DNS нагрузки
 CNAME отдельно запрашивать не требуется. Если имя является CNAME, resolver возвращает CNAME внутри ответа на запрошенный тип. Например, запрос `A` может вернуть `CNAME -> A`, а запрос `HTTPS` - `CNAME -> HTTPS`.
 
 При необходимости клиент сохраняет сырые DNS-ответы в cache-файл для `dns-server-test`, отдельный список ответивших доменов, IPv4 из настоящих `A` records и человекочитаемый лог.
+
+## Содержание
+
+- [Сборка](#%D1%81%D0%B1%D0%BE%D1%80%D0%BA%D0%B0)
+- [Использование](#%D0%B8%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5)
+- [Вывод в консоль](#%D0%B2%D1%8B%D0%B2%D0%BE%D0%B4-%D0%B2-%D0%BA%D0%BE%D0%BD%D1%81%D0%BE%D0%BB%D1%8C)
+- [Выходные файлы](#%D0%B2%D1%8B%D1%85%D0%BE%D0%B4%D0%BD%D1%8B%D0%B5-%D1%84%D0%B0%D0%B9%D0%BB%D1%8B)
+- [Человекочитаемый лог](#%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%B5%D0%BA%D0%BE%D1%87%D0%B8%D1%82%D0%B0%D0%B5%D0%BC%D1%8B%D0%B9-%D0%BB%D0%BE%D0%B3)
+- [Совместимость с dns-server-test](#%D1%81%D0%BE%D0%B2%D0%BC%D0%B5%D1%81%D1%82%D0%B8%D0%BC%D0%BE%D1%81%D1%82%D1%8C-%D1%81-dns-server-test)
 
 ## Сборка
 
